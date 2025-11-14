@@ -1,0 +1,20 @@
+{
+  "name": "student-performance-attendance-tracker",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "start": "npm run dev",
+    "install:frontend": "cd frontend && npm install"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.17",
+    "autoprefixer": "^10.4.22",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17"
+  },
+  "dependencies": {
+    "firebase": "^12.5.0"
+  }
+}
