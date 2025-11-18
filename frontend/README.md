@@ -1,3 +1,41 @@
+# Student Performance & Attendance Tracker
+
+## Firebase Setup
+
+1. Create a project in [Firebase Console](https://console.firebase.google.com/).
+2. Enable Firestore Database and Authentication (email/password).
+3. Set environment variables in a new `.env` file in the `frontend/` directory:
+
+```
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-auth-domain
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-storage-bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
+```
+
+4. Set up basic Firestore security rules to only allow signed-in users, e.g.:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /attendance/{doc} { allow read, write: if request.auth != null; }
+    match /performance/{doc} { allow read, write: if request.auth != null; }
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+5. (Planned) Deploy Cloud Functions for secure role management and user listing for admins.
+
+---
+
+Replace the sections below with information on how to run, test, and contribute.
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

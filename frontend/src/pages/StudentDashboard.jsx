@@ -6,18 +6,21 @@ import PerformanceList from "../components/PerformanceList";
 export default function StudentDashboard() {
   const studentId = auth.currentUser?.uid;
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Student Dashboard</h1>
-      <p className="mb-6 text-sm text-gray-600">View your attendance and performance.</p>
+    <div className="dashboard-section">
+      <div className="card">
+        <h1 style={{ margin: 0 }}>Student Insights</h1>
+        <p className="muted">Track your attendance trends and performance progress in one place.</p>
+      </div>
 
-      <div className="p-4 border rounded mb-6">
+      <div className="card">
+        <h2>Your Attendance</h2>
         <AttendanceList studentId={studentId} />
       </div>
 
-      <div className="p-4 border rounded">
+      <div className="card">
+        <h2>Your Performance</h2>
         <PerformanceList studentId={studentId} />
       </div>
     </div>
   );
 }
-

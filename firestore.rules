@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // users collection: admins can read/write all, users can read & edit their own profile
+    match /users/{userId} {
+      allow read: if request.auth != null && (isAdmin() || request.auth.uid == userId);
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && (isAdmin() || request.auth.uid == userId);
+      allow delete: if isAdmin();
+    }
+
+    // attendance: allow user to create for themselves; teachers/admins can create/read others
+    match /attendance/{docId} {
+      allow create: if request.auth != null && (request.resource.data.studentId == request.auth.uid || isAdmin() || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['teacher','admin']);
+      allow read: if request.auth != null && (resource.data.studentId == request.auth.uid || isAdmin() || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['teacher','admin']);
+      allow update, delete: if request.auth != null && (resource.data.studentId == request.auth.uid || isAdmin() || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['teacher','admin']);
+    }
+
+    // performance: similar rules
+    match /performance/{docId} {
+      allow create: if request.auth != null && (request.resource.data.studentId == request.auth.uid || isAdmin() || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['teacher','admin']);
+      allow read: if request.auth != null && (resource.data.studentId == request.auth.uid || isAdmin() || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['teacher','admin']);
+      allow update, delete: if request.auth != null && (resource.data.studentId == request.auth.uid || isAdmin() || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['teacher','admin']);
+    }
+  }
+}

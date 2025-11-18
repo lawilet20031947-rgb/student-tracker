@@ -23,8 +23,15 @@ export default function Login() {
         return;
       }
       const res = await createUserWithEmailAndPassword(auth, email, password);
-      // create user doc with role = student
-      await setDoc(doc(db, "users", res.user.uid), { email, role: "student" });
+      // create user doc with role = student (if Firestore is available)
+      if (db) {
+        await setDoc(doc(db, "users", res.user.uid), {
+          uid: res.user.uid,
+          email,
+          role: "student",
+          createdAt: new Date().toISOString(),
+        });
+      }
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -78,51 +85,84 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="p-8 bg-white rounded shadow w-full max-w-md">
-        <h2 className="text-2xl mb-4">{isSignup ? "Sign up" : "Log in"}</h2>
-        <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="w-full p-2 border rounded"
-            required
-            type="email"
-          />
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            type="password"
-            className="w-full p-2 border rounded"
-            required
-            minLength={6}
-          />
-          <button className="w-full p-2 bg-blue-600 text-white rounded">
-            {isSignup ? "Create account" : "Log in"}
-          </button>
-        </form>
-        {error && <p className="text-red-600 mt-3">{error}</p>}
-        <p className="mt-4 text-sm flex items-center gap-2">
-          <span>
-            {isSignup ? "Already have account?" : "Don't have account?"}
-          </span>
-          <button
-            onClick={() => {
-              setIsSignup(!isSignup);
-              setError("");
-            }}
-            className="ml-2 text-blue-600"
-          >
-            {isSignup ? "Log in" : "Sign up"}
-          </button>
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-hero">
+          <p className="muted" style={{ textTransform: "uppercase", letterSpacing: "0.12em" }}>
+            Welcome to
+          </p>
+          <h1 style={{ marginTop: 0 }}>Student Performance & Attendance Portal</h1>
+          <p className="muted">
+            Track academic performance, monitor attendance, and collaborate with your institution
+            through a single, secure workspace.
+          </p>
+          <ul style={{ marginTop: "1rem", paddingLeft: "1.25rem", color: "#cbd5f5" }}>
+            <li>Role-aware dashboards for admins, teachers, and students</li>
+            <li>Real-time syncing with Firestore for always up-to-date info</li>
+            <li>Secure authentication with Firebase Auth</li>
+          </ul>
+        </div>
 
-          <button type="button" onClick={handleForgotPassword}
-            className="px-3 py-1 bg-gray-800 text-white rounded ml-3">
-            Forgot password
-          </button>
-        </p>
+        <div>
+          <h2 style={{ marginTop: 0 }}>{isSignup ? "Create an account" : "Welcome back"}</h2>
+          <form onSubmit={isSignup ? handleSignup : handleLogin} className="login-form">
+            <div className="form-field">
+              <label>Email</label>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                type="email"
+              />
+            </div>
+            <div className="form-field">
+              <label>Password</label>
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                type="password"
+                required
+                minLength={6}
+              />
+            </div>
+            <button type="submit">
+              {isSignup ? "Create account" : "Log in"}
+            </button>
+          </form>
+          {error && <p style={{ color: "#fca5a5", marginTop: "0.75rem" }}>{error}</p>}
+
+          <div className="login-actions" style={{ marginTop: "1rem" }}>
+            <div>
+              <span className="muted">
+                {isSignup ? "Already registered?" : "Need an account?"}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSignup(!isSignup);
+                  setError("");
+                }}
+                style={{ background: "none", color: "#60a5fa", padding: 0, marginLeft: "0.5rem" }}
+              >
+                {isSignup ? "Log in" : "Sign up"}
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              style={{
+                background: "transparent",
+                border: "1px solid rgba(148,163,184,0.5)",
+                color: "#e2e8f0",
+              }}
+            >
+              Forgot password
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

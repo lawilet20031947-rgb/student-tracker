@@ -1,0 +1,76 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isTeacher() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
+    }
+
+    function isStudent() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student';
+    }
+
+    // Users collection: only read own doc, admins can read all
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAdmin() || request.auth.uid == userId;
+      allow delete: if isAdmin();
+    }
+
+    // Attendance collection
+    match /attendance/{attendanceId} {
+      // Admin: full access
+      // Teacher: can read all, create new, edit/delete own
+      // Student: can read own, cannot write
+      
+      allow read: if isAuthenticated() && 
+                     (isAdmin() || isTeacher() || 
+                      (isStudent() && resource.data.studentId == request.auth.uid));
+      
+      allow create: if isAuthenticated() && (isAdmin() || isTeacher());
+      
+      allow update: if isAdmin() || 
+                       (isTeacher() && resource.data.createdBy == request.auth.uid);
+      
+      allow delete: if isAdmin() || 
+                       (isTeacher() && resource.data.createdBy == request.auth.uid);
+    }
+
+    // Performance collection
+    match /performance/{performanceId} {
+      // Admin: full access
+      // Teacher: can read all, create new, edit/delete own
+      // Student: can read own, cannot write
+      
+      allow read: if isAuthenticated() && 
+                     (isAdmin() || isTeacher() || 
+                      (isStudent() && resource.data.studentId == request.auth.uid));
+      
+      allow create: if isAuthenticated() && (isAdmin() || isTeacher());
+      
+      allow update: if isAdmin() || 
+                       (isTeacher() && resource.data.createdBy == request.auth.uid);
+      
+      allow delete: if isAdmin() || 
+                       (isTeacher() && resource.data.createdBy == request.auth.uid);
+    }
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
